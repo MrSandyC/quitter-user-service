@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: 'user-db'
+    platform: linux/x86_64
+    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:latest
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: localhost
+      MYSQL_DATABASE: quitter-user
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - '3307:3306'
+    expose:
+      - '3306'
+    volumes: 
+      - ./docker:/docker-entrypoint-initdb.d:z
+  user-management-service:
+    depends_on: ["mysql"]
+    image: user-management-service
+    restart: unless-stopped
+    build:
+      context: .
+      target: dev
+    volumes:
+      - "./src:/usr/src/app/src"
+    environment:
+      MYSQL_HOST: "mysql"
+    ports:
+      - '5002:5002'
+volumes:
+  db-data: 
